@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Quiz</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+            box-sizing: border-box;
+            text-align: center;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        button {
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        #results {
+            margin-top: 20px;
+            font-size: 1.2em;
+        }
+        .question {
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .answers label {
+            display: block;
+            margin: 5px 0;
+        }
+        .answer-correct {
+            color: lightgreen;
+        }
+        .answer-incorrect {
+            color: red;
+        }
+        .answer-correct::before {
+            content: '✔️ ';
+            color: lightgreen;
+        }
+        .answer-incorrect::before {
+            content: '❌ ';
+            color: red;
+        }
+        #timer {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+        }
+        .category-header {
+            font-size: 1.4em;
+            font-weight: bold;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        #quiz-container {
+            display: none;
+            flex: 1;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="user-form">
+        <h2>Enter Your Details</h2>
+        <form id="details-form">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required>
+            <label for="class">Class:</label>
+            <select id="class" name="class" required>
+                <option value="1">Class 1</option>
+                <option value="2">Class 2</option>
+                <option value="3">Class 3</option>
+                <option value="4">Class 4</option>
+                <option value="5">Class 5</option>
+            </select>
+            <button type="submit">Start Quiz</button>
+        </form>
+    </div>
+
+    <div class="container" id="quiz-container">
+        <div id="timer">Time remaining: <span id="time">60</span> seconds</div>
+        <div id="quiz"></div>
+        <button id="submit">Submit Quiz</button>
+        <button id="reset">Reset Quiz</button>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        const quizData = {
+            "1": [
+                {
+                    category: "Geography",
+                    questions: [
+                        {
+                            question: "What is the capital of France?",
+                            a: "Berlin",
+                            b: "Madrid",
+                            c: "Paris",
+                            d: "Lisbon",
+                            correct: "c"
+                        },
+                        {
+                            question: "Which country is known as the Land of the Rising Sun?",
+                            a: "China",
+                            b: "Japan",
+                            c: "Thailand",
+                            d: "South Korea",
+                            correct: "b"
+                        },
+                        {
+                            question: "What is the largest continent?",
+                            a: "Asia",
+                            b: "Africa",
+                            c: "Europe",
+                            d: "Australia",
+                            correct: "a"
+                        }
+                    ]
+                }
+            ],
+            "2": [
+                {
+                    category: "Geography",
+                    questions: [
+                        {
+                            question: "What is the capital of Germany?",
+                            a: "Berlin",
+                            b: "Madrid",
+                            c: "Paris",
+                            d: "Lisbon",
+                            correct: "a"
+                        },
+                        {
+                            question: "Which country is known as the Land of Maple Leaf?",
+                            a: "USA",
+                            b: "Canada",
+                            c: "UK",
+                            d: "Australia",
+                            correct: "b"
+                        },
+                        {
+                            question: "What is the smallest continent?",
+                            a: "Asia",
+                            b: "Europe",
+                            c: "Australia",
+                            d: "Africa",
+                            correct: "c"
+                        }
+                    ]
+                }
+            ],
+            "3": [
+                {
+                    category: "Math",
+                    questions: [
+                        {
+                            question: "What is 5 + 7?",
+                            a: "10",
+                            b: "12",
+                            c: "15",
+                            d: "20",
+                            correct: "b"
+                        },
+                        {
+                            question: "What is 9 - 4?",
+                            a: "5",
+                            b: "6",
+                            c: "7",
+                            d: "8",
+                            correct: "a"
+                        },
+                        {
+                            question: "What is 3 × 6?",
+                            a: "12",
+                            b: "15",
+                            c: "18",
+                            d: "21",
+                            correct: "c"
+                        }
+                    ]
+                }
+            ],
+            "4": [
+                {
+                    category: "History",
+                    questions: [
+                        {
+                            question: "Who was the first President of the United States?",
+                            a: "George Washington",
+                            b: "Thomas Jefferson",
+                            c: "Abraham Lincoln",
+                            d: "John Adams",
+                            correct: "a"
+                        },
+                        {
+                            question: "When did World War I begin?",
+                            a: "1910",
+                            b: "1912",
+                            c: "1914",
+                            d: "1916",
+                            correct: "c"
+                        },
+                        {
+                            question: "Who discovered America?",
+                            a: "Christopher Columbus",
+                            b: "Ferdinand Magellan",
+                            c: "Vasco da Gama",
+                            d: "James Cook",
+                            correct: "a"
+                        }
+                    ]
+                }
+            ],
+            "5": [
+                {
+                    category: "Science",
+                    questions: [
+                        {
+                            question: "What is the boiling point of water?",
+                            a: "90°C",
+                            b: "100°C",
+                            c: "110°C",
+                            d: "120°C",
+                            correct: "b"
+                        },
+                        {
+                            question: "Which planet is known as the Earth’s twin?",
+                            a: "Venus",
+                            b: "Mars",
+                            c: "Jupiter",
+                            d: "Saturn",
+                            correct: "a"
+                        },
+                        {
+                            question: "What is the chemical symbol for gold?",
+                            a: "Au",
+                            b: "Ag",
+                            c: "Pb",
+                            d: "Fe",
+                            correct: "a"
+                        }
+                    ]
+                }
+            ]
+        };
+
+        const userForm = document.getElementById('user-form');
+        const detailsForm = document.getElementById('details-form');
+        const quizContainer = document.getElementById('quiz-container');
+        const quizDiv = document.getElementById('quiz');
+        const submitButton = document.getElementById('submit');
+        const resetButton = document.getElementById('reset');
+        const resultsContainer = document.getElementById('results');
+        const timeSpan = document.getElementById('time');
+
+        let timer;
+        let seconds = 60;
+        let selectedClass = "1";
+
+        function startTimer() {
+            timer = setInterval(() => {
+                seconds--;
+                timeSpan.textContent = seconds;
+                if (seconds <= 0) {
+                    clearInterval(timer);
+                    showResults();
+                }
+            }, 1000);
+        }
+
+        function buildQuiz(classData) {
+            let output = [];
+            classData.forEach(category => {
+                output.push(`<div class="category-header">${category.category}</div>`);
+                category.questions.forEach((currentQuestion, questionNumber) => {
+                    const answers = [];
+                    for (let letter in currentQuestion) {
+                        if (letter !== 'question' && letter !== 'correct' && letter !== 'category') {
+                            answers.push(
+                                `<label>
+                                    <input type="radio" name="question${questionNumber}" value="${letter}">
+                                    ${letter} : ${currentQuestion[letter]}
+                                </label>`
+                            );
+                        }
+                    }
+                    output.push(
+                        `<div class="question">${currentQuestion.question}</div>
+                        <div class="answers">${answers.join('')}</div>`
+                    );
+                });
+            });
+            quizDiv.innerHTML = output.join('');
+        }
+
+        function showResults() {
+            clearInterval(timer);
+            const answerContainers = quizDiv.querySelectorAll('.answers');
+            let numCorrect = 0;
+            quizData[selectedClass].forEach(category => {
+                category.questions.forEach((currentQuestion, questionNumber) => {
+                    const answerContainer = answerContainers[questionNumber];
+                    const selector = `input[name=question${questionNumber}]:checked`;
+                    const userAnswer = (answerContainer.querySelector(selector) || {}).value;
+                    if (userAnswer === currentQuestion.correct) {
+                        numCorrect++;
+                        answerContainer.querySelector(`input[value=${userAnswer}]`).parentElement.classList.add('answer-correct');
+                    } else {
+                        if (userAnswer) {
+                            answerContainer.querySelector(`input[value=${userAnswer}]`).parentElement.classList.add('answer-incorrect');
+                        }
+                        answerContainer.querySelector(`input[value=${currentQuestion.correct}]`).parentElement.classList.add('answer-correct');
+                    }
+                });
+            });
+            resultsContainer.innerHTML = `${numCorrect} out of ${quizData[selectedClass].flatMap(category => category.questions).length}`;
+        }
+
+        function resetQuiz() {
+            seconds = 60;
+            timeSpan.textContent = seconds;
+            buildQuiz(quizData[selectedClass]);
+            resultsContainer.innerHTML = '';
+            clearInterval(timer);
+            startTimer();
+        }
+
+        detailsForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            selectedClass = document.getElementById('class').value;
+            userForm.style.display = 'none';
+            quizContainer.style.display = 'flex';
+            buildQuiz(quizData[selectedClass]);
+            startTimer();
+        });
+
+        submitButton.addEventListener('click', showResults);
+        resetButton.addEventListener('click', resetQuiz);
+    </script>
+</body>
+</html>
+
